@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Claude Tasks</title>
-  <meta name="theme-color" content="#08090a">
+  <meta name="theme-color" content="#E86F33">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,15 +19,15 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
   <style>
     :root {
-      --bg-deep: #08090a;
-      --bg-surface: #0d0e10;
-      --bg-elevated: #131416;
-      --bg-hover: #1a1b1e;
-      --border: #1e2023;
-      --text-primary: #e8e8e8;
-      --text-secondary: #8b8d91;
-      --text-tertiary: #5a5c60;
-      --text-muted: #3d3f42;
+      --bg-deep: #171614;
+      --bg-surface: #1e1d1a;
+      --bg-elevated: #262521;
+      --bg-hover: #302e2a;
+      --border: #3a3833;
+      --text-primary: #f5f3ef;
+      --text-secondary: #c2bdb4;
+      --text-tertiary: #9a948a;
+      --text-muted: #7a746a;
       --accent: #E86F33;
       --accent-dim: rgba(232, 111, 51, 0.15);
       --accent-glow: rgba(232, 111, 51, 0.4);
@@ -669,7 +669,7 @@
     }
 
     .task-card.completed {
-      opacity: 0.6;
+      opacity: 0.8;
     }
 
     .task-card.blocked {
@@ -1562,7 +1562,7 @@
 
       /* Clear the hamburger. The empty state has no header, which is why the
          button lives in .main rather than in .view-header. */
-      .view-header { padding-right: calc(var(--tap) + 20px); }
+      .view-header { padding-right: calc(var(--tap) + 32px); }
       .empty-state { padding-top: calc(var(--tap) + 24px); }
 
       /* Detail panel becomes a full-screen sheet. The existing .visible
@@ -1692,7 +1692,7 @@
          own rows instead of fighting over one line. */
       .view-header {
         padding: 12px 16px;
-        padding-right: calc(var(--tap) + 20px);
+        padding-right: calc(var(--tap) + 32px);
         flex-wrap: wrap;
         align-items: flex-start;
         gap: 6px;
@@ -1700,19 +1700,22 @@
       .view-header > div:first-child { flex: 1 1 100%; min-width: 0; }
       .view-actions { flex: 1 1 100%; gap: 10px; margin-top: 2px; }
 
-      /* Title row. Drop the desktop flex so the title is a plain block that
-         wraps freely down into the space above the meta line, with the delete
-         button trailing the text inline and wrapping along with it -- rather
-         than being pinned to the right edge, crowding the menu button. */
+      /* Title row: the text wraps inside its own column and the button is a
+         non-shrinking flex item pinned to the right of it. Inline flow put the
+         button in the text stream, so a title that filled the line pushed the
+         BUTTON onto the next row instead of wrapping the words. */
       .view-title {
-        display: block;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
         font-size: 17px;
         line-height: 1.35;
+      }
+      .view-title > span {
+        flex: 1 1 auto;
+        min-width: 0;
         overflow-wrap: anywhere;
       }
-      /* The span carries an inline style="flex: 1" for the desktop flex row;
-         inert here, but it must not stay a block or the button drops a line. */
-      .view-title > span { display: inline; }
       /* Visually 32px -- a 44px box here inflates the title's line box and
          spaces the wrapped lines unevenly. The transparent ::after reclaims
          6px of tap area on the free edges (~38px effective); the remaining
@@ -1720,14 +1723,14 @@
          meta line below, which no z-index fixes since they are inline boxes
          in the same flow. Acceptable: this is a confirm-guarded action. */
       .view-title .icon-btn {
-        display: inline-flex;
-        vertical-align: middle;
+        display: flex;
         position: relative;
+        flex: 0 0 auto;
         width: 32px;
         height: 32px;
-        margin-left: 8px;
-        flex-shrink: 0;
-        z-index: 1;   /* the meta line otherwise paints over the lower overhang */
+        /* Centre it on the menu button's row: the menu sits at top:12px with
+           height var(--tap), and the title column starts at the same 12px. */
+        margin-top: calc(var(--tap) / 2 - 16px);
       }
       .view-title .icon-btn::after {
         content: '';
@@ -3102,17 +3105,11 @@
         }).join('');
     }
 
-    function syncThemeColor(isLight) {
-      document.querySelectorAll('meta[name="theme-color"]').forEach(m =>
-        m.setAttribute('content', isLight ? '#ffffff' : '#08090a'));
-    }
-
     function toggleTheme() {
       const isLight = document.body.classList.toggle('light');
       localStorage.setItem('theme', isLight ? 'light' : 'dark');
       document.getElementById('theme-icon-dark').style.display = isLight ? 'none' : 'block';
       document.getElementById('theme-icon-light').style.display = isLight ? 'block' : 'none';
-      syncThemeColor(isLight);
     }
 
     function loadTheme() {
@@ -3120,7 +3117,6 @@
         document.body.classList.add('light');
         document.getElementById('theme-icon-dark').style.display = 'none';
         document.getElementById('theme-icon-light').style.display = 'block';
-        syncThemeColor(true);
       }
     }
 
