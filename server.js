@@ -351,9 +351,16 @@ app.get('/api/sessions', async (req, res) => {
     // Convert map to array and sort by most recently modified
     let sessions = Array.from(sessionsMap.values());
 
+    // Report what the filter removed, so the client can offer a way back to it.
+    // A response header rather than a wrapper object, so the array shape that
+    // every existing consumer expects is unchanged.
+    let filteredOut = 0;
     if (withTasksOnly) {
+      const before = sessions.length;
       sessions = sessions.filter(s => s.hasTasks);
+      filteredOut = before - sessions.length;
     }
+    res.set('X-Sessions-Filtered-Out', String(filteredOut));
 
     sessions.sort((a, b) => new Date(b.modifiedAt) - new Date(a.modifiedAt));
 

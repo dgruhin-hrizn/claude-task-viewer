@@ -413,6 +413,26 @@
       font-variant-numeric: tabular-nums;
     }
 
+    .sessions-hidden-note {
+      display: block;
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      color: var(--text-tertiary);
+      font-family: var(--mono);
+      font-size: 11px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .sessions-hidden-note:hover {
+      color: var(--text-secondary);
+      border-color: var(--text-muted);
+    }
+
     .session-no-tasks {
       font-size: 10px;
       color: var(--text-muted);
@@ -2044,6 +2064,10 @@
     let currentTasks = [];
     let viewMode = 'session';
     let sessionFilter = localStorage.getItem('sessionFilter') || 'with-tasks'; // 'with-tasks' | 'all' | 'active'
+    // how many sessions the server-side filter removed, from X-Sessions-Filtered-Out
+    let sessionsFilteredOut = 0;
+    // post-filter list size, for the client-side ('active') hidden count
+    let lastVisibleCount = 0;
     let sessionLimit = localStorage.getItem('sessionLimit') || '20'; // '10', '20', '50', 'all'
     let filterProject = null; // null = all projects, or project path to filter
     let searchQuery = ''; // Search query for fuzzy search
@@ -2088,6 +2112,7 @@
 
         const withTasks = sessionFilter === 'with-tasks' ? '&withTasks=1' : '';
         const res = await fetch(`/api/sessions?limit=${sessionLimit}${withTasks}`);
+        sessionsFilteredOut = parseInt(res.headers.get('X-Sessions-Filtered-Out') || '0', 10) || 0;
         sessions = await res.json();
         console.log('[fetchSessions] Sessions loaded:', sessions.length);
 
@@ -2525,6 +2550,7 @@
         }
       }
 
+      lastVisibleCount = filteredSessions.length;
       let html = activeSessions.map(session => renderSessionItem(session, false)).join('');
 
       if (archivedSessions.length > 0) {
@@ -2541,7 +2567,23 @@
         `;
       }
 
-      sessionsList.innerHTML = html;
+      sessionsList.innerHTML = hiddenNote() + html;
+    }
+
+    // Both filters can hide sessions with no indication anything is missing.
+    // The existing empty-state hint only fires when the list is COMPLETELY
+    // empty, which is exactly the case a confused user is not in.
+    function hiddenNote() {
+      const hidden = sessionFilter === 'with-tasks'
+        ? sessionsFilteredOut
+        : (sessionFilter === 'active' ? sessions.length - lastVisibleCount : 0);
+      if (hidden <= 0) return '';
+      const label = sessionFilter === 'with-tasks' ? 'without tasks' : 'not active';
+      return `
+        <button class="sessions-hidden-note" data-action="show-all-sessions">
+          ${hidden} session${hidden === 1 ? '' : 's'} hidden (${label}) — show all
+        </button>
+      `;
     }
 
     function renderSessionItem(session, isArchived) {
@@ -3023,6 +3065,7 @@
         case 'open-live-task':       openLiveTask(sessionId, taskId); return true;
         case 'delete-session-tasks': deleteAllSessionTasks(sessionId); return true;
         case 'add-note':             addNote(event, taskId, sessionId); return true;
+        case 'show-all-sessions':    filterBySessions('all'); return true;
         default: return false;
       }
     }
@@ -3170,6 +3213,8 @@
     function filterBySessions(value) {
       sessionFilter = value;
       localStorage.setItem('sessionFilter', sessionFilter);
+      const select = document.getElementById('session-filter');
+      if (select && select.value !== value) select.value = value;
       // 'with-tasks' is applied server-side (before the limit), so the session
       // list has to be refetched rather than just re-rendered
       fetchSessions();
