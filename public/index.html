@@ -1201,6 +1201,11 @@
     /* Archived sessions */
     .archived-header {
       display: flex;
+      width: 100%;
+      background: none;
+      border: none;
+      text-align: left;
+      font-family: inherit;
       align-items: center;
       gap: 8px;
       padding: 10px 12px;
@@ -2555,13 +2560,15 @@
 
       if (archivedSessions.length > 0) {
         html += `
-          <div class="archived-header ${archivedExpanded ? 'expanded' : ''}" onclick="toggleArchived()">
+          <button type="button" class="archived-header ${archivedExpanded ? 'expanded' : ''}"
+                  data-action="toggle-archived"
+                  aria-expanded="${archivedExpanded}" aria-controls="archived-sessions">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 18l6-6-6-6"/>
             </svg>
             <span>Archived (${archivedSessions.length})</span>
-          </div>
-          <div class="archived-sessions ${archivedExpanded ? 'visible' : ''}">
+          </button>
+          <div id="archived-sessions" class="archived-sessions ${archivedExpanded ? 'visible' : ''}">
             ${archivedSessions.map(session => renderSessionItem(session, true)).join('')}
           </div>
         `;
@@ -3066,6 +3073,7 @@
         case 'delete-session-tasks': deleteAllSessionTasks(sessionId); return true;
         case 'add-note':             addNote(event, taskId, sessionId); return true;
         case 'show-all-sessions':    filterBySessions('all'); return true;
+        case 'toggle-archived':      toggleArchived(); return true;
         default: return false;
       }
     }
@@ -3533,7 +3541,10 @@
       localStorage.setItem('archivedExpanded', String(archivedExpanded));
       const header = document.querySelector('.archived-header');
       const container = document.querySelector('.archived-sessions');
-      if (header) header.classList.toggle('expanded', archivedExpanded);
+      if (header) {
+        header.classList.toggle('expanded', archivedExpanded);
+        header.setAttribute('aria-expanded', String(archivedExpanded));
+      }
       if (container) container.classList.toggle('visible', archivedExpanded);
     }
 
