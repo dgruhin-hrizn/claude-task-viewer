@@ -11,7 +11,8 @@
     "dev:server": "node server.js",
     "build": "tsc -b && vite build",
     "preview": "npm run build && node server.js --open",
-    "start": "node server.js"
+    "start": "node server.js",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
