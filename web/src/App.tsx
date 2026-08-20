@@ -12,6 +12,7 @@ import { KanbanBoard } from './components/board/KanbanBoard';
 import { ProgressMeter } from './components/board/ProgressMeter';
 import { TaskDetail } from './components/detail/TaskDetail';
 import { TimelineView } from './components/timeline/TimelineView';
+import { MobileOverview } from './components/overview/MobileOverview';
 import { HelpDialog } from './components/dialogs/HelpDialog';
 import { ConfirmDialog } from './components/dialogs/ConfirmDialog';
 import { EmptyState } from './components/ui/EmptyState';
@@ -25,6 +26,8 @@ export default function App() {
   const notificationsEnabled = useUiStore((s) => s.notificationsEnabled);
   const setDrawerOpen = useUiStore((s) => s.setDrawerOpen);
   const isDrawer = useMediaQuery(BREAKPOINTS.drawer);
+  const isPhone = useMediaQuery(BREAKPOINTS.phone);
+  const mobileTab = useUiStore((s) => s.mobileTab);
 
   const { data: tasks = [], isLoading } = useSessionTasks(selectedSessionId);
   const del = useDeleteTask(selectedSessionId ?? '');
@@ -80,7 +83,9 @@ export default function App() {
           </>
         }
       >
-        {!selectedSessionId ? (
+        {isPhone && mobileTab === 'overview' ? (
+          <MobileOverview />
+        ) : !selectedSessionId ? (
           <EmptyState
             icon={ListTodo}
             title="No session open"
@@ -95,7 +100,11 @@ export default function App() {
         ) : (
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              {boardView === 'timeline' ? <TimelineView tasks={tasks} /> : <KanbanBoard tasks={tasks} />}
+              {isPhone
+                ? (mobileTab === 'overview' ? <MobileOverview />
+                  : mobileTab === 'timeline' ? <TimelineView tasks={tasks} />
+                  : <KanbanBoard tasks={tasks} />)
+                : (boardView === 'timeline' ? <TimelineView tasks={tasks} /> : <KanbanBoard tasks={tasks} />)}
             </div>
             <TaskDetail tasks={tasks} sessionId={selectedSessionId} />
           </div>

@@ -5,6 +5,8 @@ export type SessionFilter = 'with-tasks' | 'all' | 'active';
 export type ViewMode = 'session' | 'all';
 export type BoardView = 'kanban' | 'timeline';
 export type KanbanTab = 'pending' | 'in-progress' | 'completed';
+/** Phone-only destination; desktop shows everything at once and ignores this. */
+export type MobileTab = 'overview' | 'board' | 'timeline';
 export type SessionLimit = number | 'all';
 
 interface UiState {
@@ -16,6 +18,7 @@ interface UiState {
   // persisted preferences
   boardView: BoardView;
   kanbanTab: KanbanTab;
+  mobileTab: MobileTab;
   sessionFilter: SessionFilter;
   sessionLimit: SessionLimit;
   filterProject: string;
@@ -30,6 +33,7 @@ interface UiState {
   setDrawerOpen: (b: boolean) => void;
   setBoardView: (v: BoardView) => void;
   setKanbanTab: (t: KanbanTab) => void;
+  setMobileTab: (t: MobileTab) => void;
   setSessionFilter: (f: SessionFilter) => void;
   setSessionLimit: (l: SessionLimit) => void;
   setFilterProject: (p: string) => void;
@@ -47,6 +51,7 @@ export const useUiStore = create<UiState>()(
       drawerOpen: false,
       boardView: 'kanban',
       kanbanTab: 'pending',
+      mobileTab: 'overview',
       // Task-less sessions outnumber the rest ~4:1, so showing everything by
       // default buries what people opened the app to look at.
       sessionFilter: 'with-tasks',
@@ -56,12 +61,13 @@ export const useUiStore = create<UiState>()(
       archivedExpanded: false,
       searchQuery: '',
 
-      selectSession: (id) => set({ selectedSessionId: id, viewMode: 'session', drawerOpen: false }),
+      selectSession: (id) => set({ selectedSessionId: id, viewMode: 'session', drawerOpen: false, mobileTab: 'board' }),
       selectTask: (id) => set({ selectedTaskId: id }),
       setViewMode: (viewMode) => set({ viewMode }),
       setDrawerOpen: (drawerOpen) => set({ drawerOpen }),
       setBoardView: (boardView) => set({ boardView }),
       setKanbanTab: (kanbanTab) => set({ kanbanTab }),
+      setMobileTab: (mobileTab) => set({ mobileTab }),
       setSessionFilter: (sessionFilter) => set({ sessionFilter }),
       setSessionLimit: (sessionLimit) => set({ sessionLimit }),
       setFilterProject: (filterProject) => set({ filterProject }),
@@ -77,6 +83,7 @@ export const useUiStore = create<UiState>()(
       partialize: (s) => ({
         boardView: s.boardView,
         kanbanTab: s.kanbanTab,
+        mobileTab: s.mobileTab,
         sessionFilter: s.sessionFilter,
         sessionLimit: s.sessionLimit,
         filterProject: s.filterProject,
