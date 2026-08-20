@@ -7,6 +7,7 @@ import { useDeleteAllTasks, useDeleteTask } from './hooks/useTaskMutations';
 import { useCompletionNotifications } from './hooks/useCompletionNotifications';
 import { useUiStore } from './stores/uiStore';
 import { AppShell } from './components/layout/AppShell';
+import { PullToRefresh } from './components/layout/PullToRefresh';
 import { BREAKPOINTS, useMediaQuery } from './hooks/useMediaQuery';
 import { KanbanBoard } from './components/board/KanbanBoard';
 import { ProgressMeter } from './components/board/ProgressMeter';
@@ -88,7 +89,7 @@ export default function App() {
         }
       >
         {isPhone && mobileTab === 'overview' ? (
-          <MobileOverview />
+          <PullToRefresh enabled><MobileOverview /></PullToRefresh>
         ) : !selectedSessionId ? (
           <EmptyState
             icon={ListTodo}
@@ -108,6 +109,7 @@ export default function App() {
         ) : isLoading ? (
           <p className="p-6 text-sm text-text-muted">Loading…</p>
         ) : (
+          <PullToRefresh enabled={isPhone}>
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
               {isPhone
@@ -118,6 +120,7 @@ export default function App() {
             </div>
             <TaskDetail tasks={tasks} sessionId={selectedSessionId} />
           </div>
+          </PullToRefresh>
         )}
       </AppShell>
 
