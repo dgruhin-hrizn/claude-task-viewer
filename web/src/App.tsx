@@ -5,10 +5,12 @@ import { AppShell } from './components/layout/AppShell';
 import { KanbanBoard } from './components/board/KanbanBoard';
 import { ProgressMeter } from './components/board/ProgressMeter';
 import { TaskDetail } from './components/detail/TaskDetail';
+import { TimelineView } from './components/timeline/TimelineView';
 
 export default function App() {
   useUrlState();
   const selectedSessionId = useUiStore((s) => s.selectedSessionId);
+  const boardView = useUiStore((s) => s.boardView);
   const { data: tasks = [], isLoading } = useSessionTasks(selectedSessionId);
 
   const done = tasks.filter((t) => t.status === 'completed').length;
@@ -26,7 +28,7 @@ export default function App() {
       ) : (
         <div className="flex min-h-0 flex-1 overflow-hidden">
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <KanbanBoard tasks={tasks} />
+            {boardView === 'timeline' ? <TimelineView tasks={tasks} /> : <KanbanBoard tasks={tasks} />}
           </div>
           <TaskDetail tasks={tasks} />
         </div>
