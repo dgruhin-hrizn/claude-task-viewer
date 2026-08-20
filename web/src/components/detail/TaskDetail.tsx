@@ -1,24 +1,19 @@
-import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { BREAKPOINTS, useMediaQuery } from '@/hooks/useMediaQuery';
+import { useOverlayFocus } from '@/hooks/useRestoreFocus';
 import { useUiStore } from '@/stores/uiStore';
 import type { Task } from '@/types/task';
 import { TaskDetailBody } from './TaskDetailBody';
 
-export function TaskDetail({ tasks }: { tasks: Task[] }) {
+export function TaskDetail({ tasks, sessionId }: { tasks: Task[]; sessionId: string }) {
   const isSheet = useMediaQuery(BREAKPOINTS.drawer);
   const selectedTaskId = useUiStore((s) => s.selectedTaskId);
   const selectTask = useUiStore((s) => s.selectTask);
   const task = tasks.find((t) => t.id === selectedTaskId) ?? null;
 
-  // The mobile sheet has no SheetTrigger -- it opens because a card set
-  // selectedTaskId -- so Radix has nothing to return focus to on close.
-  // Remember whatever was focused when it opened and restore that.
-  const opener = useRef<HTMLElement | null>(null);
-  useEffect(() => {
-    if (selectedTaskId) opener.current = document.activeElement as HTMLElement | null;
-  }, [selectedTaskId]);
+  // shared with every other overlay: no SheetTrigger here either
+  const onCloseAutoFocus = useOverlayFocus(!!selectedTaskId);
 
   if (!task) return null;
 
@@ -44,14 +39,11 @@ export function TaskDetail({ tasks }: { tasks: Task[] }) {
           side="right"
           title="Task Details"
           className="w-full max-w-none"
-          onCloseAutoFocus={(e) => {
-            e.preventDefault();
-            opener.current?.focus();
-          }}
+          onCloseAutoFocus={onCloseAutoFocus}
         >
           <div className="flex h-full min-h-0 flex-col">
             {header}
-            <TaskDetailBody task={task} allTasks={tasks} />
+            <TaskDetailBody task={task} allTasks={tasks} sessionId={sessionId} />
           </div>
         </SheetContent>
       </Sheet>
@@ -67,7 +59,7 @@ export function TaskDetail({ tasks }: { tasks: Task[] }) {
       className="flex w-[400px] shrink-0 flex-col border-l border-border bg-surface"
     >
       {header}
-      <TaskDetailBody task={task} allTasks={tasks} />
+      <TaskDetailBody task={task} allTasks={tasks} sessionId={sessionId} />
     </aside>
   );
 }

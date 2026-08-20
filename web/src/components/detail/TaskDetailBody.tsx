@@ -2,6 +2,7 @@ import { isTaskActuallyBlocked } from '@/lib/tasks';
 import { useUiStore } from '@/stores/uiStore';
 import type { Task } from '@/types/task';
 import { MarkdownBody } from './MarkdownBody';
+import { NoteForm } from './NoteForm';
 
 const STATUS_LABEL: Record<Task['status'], string> = {
   pending: 'Pending', in_progress: 'In Progress', completed: 'Completed',
@@ -34,7 +35,7 @@ function DepList({ label, ids }: { label: string; ids: string[] }) {
   );
 }
 
-export function TaskDetailBody({ task, allTasks }: { task: Task; allTasks: Task[] }) {
+export function TaskDetailBody({ task, allTasks, sessionId }: { task: Task; allTasks: Task[]; sessionId: string }) {
   const blocked = isTaskActuallyBlocked(task, allTasks);
   return (
     <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6">
@@ -68,6 +69,8 @@ export function TaskDetailBody({ task, allTasks }: { task: Task; allTasks: Task[
                             : <p className="italic text-text-muted">No description</p>}
         </div>
       </section>
+
+      <NoteForm sessionId={sessionId} taskId={task.id} />
     </div>
   );
 }
