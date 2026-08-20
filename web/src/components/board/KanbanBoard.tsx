@@ -45,7 +45,7 @@ export function KanbanBoard({ tasks }: { tasks: Task[] }) {
             hand-rolled vanilla tab strip never had. */}
         <Tabs.List
           aria-label="Task status"
-          className="flex shrink-0 gap-1.5 border-b border-border bg-surface p-3"
+          className="flex shrink-0 gap-1.5 border-b border-border bg-surface px-3 py-2"
         >
           {COLUMNS.map((c) => {
             const key = (c.status === 'in_progress' ? 'in-progress' : c.status) as KanbanTab;
@@ -66,7 +66,7 @@ export function KanbanBoard({ tasks }: { tasks: Task[] }) {
         {COLUMNS.map((c) => {
           const key = (c.status === 'in_progress' ? 'in-progress' : c.status) as KanbanTab;
           return (
-            <Tabs.Content key={key} value={key} className="min-h-0 flex-1 overflow-hidden p-3">
+            <Tabs.Content key={key} value={key} className="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
               <KanbanColumn {...c} tasks={by(c.status)} allTasks={tasks} hideHeader />
             </Tabs.Content>
           );

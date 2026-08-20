@@ -67,20 +67,23 @@ export default function App() {
     <>
       <AppShell
         subtitle={selectedSessionId ? `${tasks.length} tasks` : 'No session selected'}
+        onDeleteAll={tasks.length > 0 ? () => setConfirmDeleteAll(true) : undefined}
         headerRight={
           <>
             {tasks.length > 0 && <ProgressMeter value={pct} label="Session progress" />}
-            {tasks.length > 0 && (
+            {!isPhone && tasks.length > 0 && (
               <button type="button" aria-label="Delete all tasks in this session"
                 onClick={() => setConfirmDeleteAll(true)}
-                className="flex size-8 items-center justify-center rounded-lg border border-border text-destructive max-md:size-11">
-                <Trash2 className="size-4 max-md:size-5" />
+                className="flex size-8 items-center justify-center rounded-lg border border-border text-destructive">
+                <Trash2 className="size-4" />
               </button>
             )}
-            <button type="button" aria-label="Keyboard shortcuts" onClick={() => setHelp(true)}
-              className="flex size-8 items-center justify-center rounded-lg border border-border text-text-tertiary max-md:hidden">
-              <CircleHelp className="size-4" />
-            </button>
+            {!isPhone && (
+              <button type="button" aria-label="Keyboard shortcuts" onClick={() => setHelp(true)}
+                className="flex size-8 items-center justify-center rounded-lg border border-border text-text-tertiary max-md:hidden">
+                <CircleHelp className="size-4" />
+              </button>
+            )}
           </>
         }
       >

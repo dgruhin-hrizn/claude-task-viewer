@@ -10,13 +10,15 @@ import { SkipNav } from './SkipNav';
 import { ViewHeader } from './ViewHeader';
 
 export function AppShell({
-  children, headerRight, subtitle,
+  children, headerRight, subtitle, onDeleteAll,
 }: {
   children?: React.ReactNode; headerRight?: React.ReactNode; subtitle?: string;
+  onDeleteAll?: () => void;
 }) {
   const isDrawer = useMediaQuery(BREAKPOINTS.drawer);
   const isPhone = useMediaQuery(BREAKPOINTS.phone);
   const status = useEventStream();
+
   // Drawer state lives in the store, because selectSession() closes it as part
   // of selecting -- local state here silently ignored that and the drawer
   // stayed open over the board after a tap.
@@ -59,7 +61,7 @@ export function AppShell({
             </SheetContent>
           </Sheet>
         )}
-        <ViewHeader compact={isDrawer} right={headerRight} subtitle={subtitle} />
+        <ViewHeader compact={isDrawer} phone={isPhone} right={headerRight} subtitle={subtitle} onDeleteAll={onDeleteAll} />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
         {isPhone && <BottomNav />}
       </main>
