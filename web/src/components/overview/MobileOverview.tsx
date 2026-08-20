@@ -1,9 +1,12 @@
 import { useMemo } from 'react';
-import { Activity, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Activity, CheckCircle2, ChevronRight, Search, X } from 'lucide-react';
 import { useAllTasks, useSessions } from '@/hooks/useSessions';
 import { useUiStore } from '@/stores/uiStore';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/utils';
+import { fuzzyMatch } from '@/lib/tasks';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { SessionFilter } from '@/stores/uiStore';
 import type { Session, Task } from '@/types/task';
 
 function ago(iso: string) {
@@ -20,11 +23,24 @@ function ago(iso: string) {
  *  is it done?" -- which the board cannot answer without first picking a
  *  session. This answers it with zero taps, across every session at once. */
 export function MobileOverview() {
-  const { data: all = [], isLoading } = useAllTasks(true);
-  const { data: sessionData } = useSessions('all', true);
-  const sessions = sessionData?.sessions ?? [];
   const selectSession = useUiStore((s) => s.selectSession);
   const selectTask = useUiStore((s) => s.selectTask);
+  // Reuses the same store fields and matcher as the drawer, so phone and
+  // desktop filtering cannot drift apart.
+  const searchQuery = useUiStore((s) => s.searchQuery);
+  const setSearchQuery = useUiStore((s) => s.setSearchQuery);
+  const sessionFilter = useUiStore((s) => s.sessionFilter);
+  const setSessionFilter = useUiStore((s) => s.setSessionFilter);
+  const { data: all = [], isLoading } = useAllTasks(true);
+  const { data: sessionData } = useSessions('all', sessionFilter === 'with-tasks');
+  const allSessions = sessionData?.sessions ?? [];
+  const sessions = useMemo(() => {
+    let out = allSessions;
+    if (sessionFilter === 'active') out = out.filter((s) => s.pending > 0 || s.inProgress > 0);
+    if (searchQuery) out = out.filter((s) =>
+      fuzzyMatch(`${s.name ?? ''} ${s.project ?? ''} ${s.gitBranch ?? ''}`, searchQuery));
+    return out;
+  }, [allSessions, sessionFilter, searchQuery]);
 
   const { running, done } = useMemo(() => ({
     running: all.filter((t) => t.status === 'in_progress'),
@@ -105,8 +121,58 @@ export function MobileOverview() {
         <h2 id="ov-sessions" className="text-[11px] uppercase tracking-wider text-text-muted">
           Sessions
         </h2>
+
+        <div className="mt-2 flex gap-2">
+          <div className="relative min-w-0 flex-1">
+            <label htmlFor="ov-search" className="sr-only">Search sessions</label>
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-text-muted" />
+            <input
+              id="ov-search"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search sessions…"
+              className="min-h-11 w-full rounded-md border border-border bg-elevated pl-9 pr-9 text-[16px] text-foreground placeholder:text-text-muted"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded text-text-tertiary"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
+          </div>
+          <div className="w-[8.5rem] shrink-0">
+            <label htmlFor="ov-filter" className="sr-only">Filter sessions</label>
+            <Select value={sessionFilter} onValueChange={(v) => setSessionFilter(v as SessionFilter)}>
+              <SelectTrigger id="ov-filter" aria-label="Filter sessions"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="with-tasks">With Tasks</SelectItem>
+                <SelectItem value="all">All Sessions</SelectItem>
+                <SelectItem value="active">Active Only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         {sessions.length === 0 ? (
-          <EmptyState title="No sessions with tasks" hint="They appear here as Claude Code writes tasks." className="py-6" />
+          searchQuery ? (
+            <EmptyState
+              title={`Nothing matches "${searchQuery}"`}
+              hint="Search covers session names, projects and branches."
+              action={{ label: 'Clear search', onClick: () => setSearchQuery('') }}
+              className="py-6"
+            />
+          ) : (
+            <EmptyState
+              title="No sessions match this filter"
+              hint="They appear here as Claude Code writes tasks."
+              action={sessionFilter === 'all' ? undefined : { label: 'Show all sessions', onClick: () => setSessionFilter('all') }}
+              className="py-6"
+            />
+          )
         ) : (
           <ul role="list" className="mt-2 space-y-1">
             {sessions.map((s) => {
