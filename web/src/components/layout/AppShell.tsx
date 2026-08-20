@@ -7,7 +7,11 @@ import { SidebarContent } from './Sidebar';
 import { SkipNav } from './SkipNav';
 import { ViewHeader } from './ViewHeader';
 
-export function AppShell({ children }: { children?: React.ReactNode }) {
+export function AppShell({
+  children, headerRight, subtitle,
+}: {
+  children?: React.ReactNode; headerRight?: React.ReactNode; subtitle?: string;
+}) {
   const isDrawer = useMediaQuery(BREAKPOINTS.drawer);
   const status = useEventStream();
   const [open, setOpen] = useState(false);
@@ -48,8 +52,8 @@ export function AppShell({ children }: { children?: React.ReactNode }) {
             </SheetContent>
           </Sheet>
         )}
-        <ViewHeader compact={isDrawer} />
-        <div className="min-h-0 flex-1 overflow-auto overscroll-contain">{children}</div>
+        <ViewHeader compact={isDrawer} right={headerRight} subtitle={subtitle} />
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
       </main>
     </div>
   );

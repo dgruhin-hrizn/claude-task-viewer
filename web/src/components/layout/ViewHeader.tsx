@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 const NEXT: Record<ThemeChoice, ThemeChoice> = { light: 'dark', dark: 'system', system: 'light' };
 const ICON = { light: Sun, dark: Moon, system: SunMoon };
 
-export function ViewHeader({ compact }: { compact: boolean }) {
+export function ViewHeader({ compact, right, subtitle }: { compact: boolean; right?: React.ReactNode; subtitle?: string }) {
   const { theme, setTheme } = useTheme();
   const Icon = ICON[theme];
   return (
@@ -20,8 +20,10 @@ export function ViewHeader({ compact }: { compact: boolean }) {
         <h1 className={cn('truncate font-serif', compact ? 'text-[17px]' : 'text-xl')}>
           Claude Tasks
         </h1>
-        <p className="mt-1 text-xs text-text-tertiary">No session selected</p>
+        <p className="mt-1 text-xs text-text-tertiary">{subtitle ?? 'No session selected'}</p>
       </div>
+      <div className="flex shrink-0 items-center gap-3">
+      {right}
       <button
         type="button"
         onClick={() => setTheme(NEXT[theme])}
@@ -34,6 +36,7 @@ export function ViewHeader({ compact }: { compact: boolean }) {
       >
         <Icon className={compact ? 'size-5' : 'size-4'} />
       </button>
+      </div>
     </header>
   );
 }
