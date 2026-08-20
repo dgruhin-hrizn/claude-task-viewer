@@ -28,6 +28,7 @@ export default function App() {
   const isDrawer = useMediaQuery(BREAKPOINTS.drawer);
   const isPhone = useMediaQuery(BREAKPOINTS.phone);
   const mobileTab = useUiStore((s) => s.mobileTab);
+  const setMobileTab = useUiStore((s) => s.setMobileTab);
 
   const { data: tasks = [], isLoading } = useSessionTasks(selectedSessionId);
   const del = useDeleteTask(selectedSessionId ?? '');
@@ -89,11 +90,17 @@ export default function App() {
           <EmptyState
             icon={ListTodo}
             title="No session open"
-            hint={isDrawer
-              ? 'Sessions appear here as Claude Code writes tasks. Open the menu to pick one.'
-              : 'Sessions appear here as Claude Code writes tasks. Pick one from the list on the left.'}
-            // only offer the action where the thing it opens actually exists
-            action={isDrawer ? { label: 'Browse sessions', onClick: () => setDrawerOpen(true) } : undefined}
+            hint={isPhone
+              ? 'Sessions appear here as Claude Code writes tasks. Overview lists them all.'
+              : isDrawer
+                ? 'Sessions appear here as Claude Code writes tasks. Open the menu to pick one.'
+                : 'Sessions appear here as Claude Code writes tasks. Pick one from the list on the left.'}
+            // point at whichever session list this viewport actually has
+            action={isPhone
+              ? { label: 'Go to Overview', onClick: () => setMobileTab('overview') }
+              : isDrawer
+                ? { label: 'Browse sessions', onClick: () => setDrawerOpen(true) }
+                : undefined}
           />
         ) : isLoading ? (
           <p className="p-6 text-sm text-text-muted">Loading…</p>

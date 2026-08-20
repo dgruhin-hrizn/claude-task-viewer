@@ -43,7 +43,7 @@ export function AppShell({
       )}
 
       <main id="main" className="relative flex min-w-0 flex-1 flex-col bg-background">
-        {isDrawer && (
+        {isDrawer && !isPhone && (
           // The trigger must live inside <Sheet> and be Radix's own Trigger:
           // a button outside it leaves Radix with nothing to return focus to
           // when the drawer closes, so focus falls to <body>.
