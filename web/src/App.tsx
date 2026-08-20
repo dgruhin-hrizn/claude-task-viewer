@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { CircleHelp, Trash2 } from 'lucide-react';
+import { CircleHelp, ListTodo, Trash2 } from 'lucide-react';
 import { useSessionTasks } from './hooks/useSessions';
 import { useUrlState } from './hooks/useUrlState';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -7,12 +7,14 @@ import { useDeleteAllTasks, useDeleteTask } from './hooks/useTaskMutations';
 import { useCompletionNotifications } from './hooks/useCompletionNotifications';
 import { useUiStore } from './stores/uiStore';
 import { AppShell } from './components/layout/AppShell';
+import { BREAKPOINTS, useMediaQuery } from './hooks/useMediaQuery';
 import { KanbanBoard } from './components/board/KanbanBoard';
 import { ProgressMeter } from './components/board/ProgressMeter';
 import { TaskDetail } from './components/detail/TaskDetail';
 import { TimelineView } from './components/timeline/TimelineView';
 import { HelpDialog } from './components/dialogs/HelpDialog';
 import { ConfirmDialog } from './components/dialogs/ConfirmDialog';
+import { EmptyState } from './components/ui/EmptyState';
 
 export default function App() {
   useUrlState();
@@ -21,6 +23,8 @@ export default function App() {
   const selectTask = useUiStore((s) => s.selectTask);
   const boardView = useUiStore((s) => s.boardView);
   const notificationsEnabled = useUiStore((s) => s.notificationsEnabled);
+  const setDrawerOpen = useUiStore((s) => s.setDrawerOpen);
+  const isDrawer = useMediaQuery(BREAKPOINTS.drawer);
 
   const { data: tasks = [], isLoading } = useSessionTasks(selectedSessionId);
   const del = useDeleteTask(selectedSessionId ?? '');
@@ -77,7 +81,15 @@ export default function App() {
         }
       >
         {!selectedSessionId ? (
-          <p className="p-6 text-sm text-text-tertiary">Select a session to view its tasks.</p>
+          <EmptyState
+            icon={ListTodo}
+            title="No session open"
+            hint={isDrawer
+              ? 'Sessions appear here as Claude Code writes tasks. Open the menu to pick one.'
+              : 'Sessions appear here as Claude Code writes tasks. Pick one from the list on the left.'}
+            // only offer the action where the thing it opens actually exists
+            action={isDrawer ? { label: 'Browse sessions', onClick: () => setDrawerOpen(true) } : undefined}
+          />
         ) : isLoading ? (
           <p className="p-6 text-sm text-text-muted">Loading…</p>
         ) : (

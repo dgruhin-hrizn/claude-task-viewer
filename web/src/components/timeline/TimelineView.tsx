@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { describeBar, formatAxisLabel, formatDuration } from '@/lib/time';
 import { useUiStore } from '@/stores/uiStore';
 import type { Task } from '@/types/task';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 /** Shared by the axis and the rows. In the vanilla app this lived in CSS and
  *  was read back out with getComputedStyle; here it is simply a constant. */
@@ -43,7 +44,12 @@ export function TimelineView({ tasks }: { tasks: Task[] }) {
     }) };
   }, [tasks, isPhone]);
 
-  if (!model) return <p className="p-6 text-sm text-text-muted">No tasks to plot.</p>;
+  if (!model) return (
+    <EmptyState
+      title="Nothing to plot yet"
+      hint="The timeline draws each task from when it was created to when it last changed."
+    />
+  );
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 md:p-6">
