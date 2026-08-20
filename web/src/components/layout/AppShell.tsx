@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { BREAKPOINTS, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useEventStream } from '@/hooks/useEventStream';
+import { useUiStore } from '@/stores/uiStore';
 import { SidebarContent } from './Sidebar';
 import { SkipNav } from './SkipNav';
 import { ViewHeader } from './ViewHeader';
@@ -14,7 +15,11 @@ export function AppShell({
 }) {
   const isDrawer = useMediaQuery(BREAKPOINTS.drawer);
   const status = useEventStream();
-  const [open, setOpen] = useState(false);
+  // Drawer state lives in the store, because selectSession() closes it as part
+  // of selecting -- local state here silently ignored that and the drawer
+  // stayed open over the board after a tap.
+  const open = useUiStore((st) => st.drawerOpen);
+  const setOpen = useUiStore((st) => st.setDrawerOpen);
 
   // Crossing up to desktop while the drawer is open would otherwise leave a
   // focus-trapping overlay mounted over a layout that no longer needs it.

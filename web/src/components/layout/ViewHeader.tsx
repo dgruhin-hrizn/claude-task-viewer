@@ -13,9 +13,13 @@ export function ViewHeader({ compact, right, subtitle }: { compact: boolean; rig
   return (
     <header
       className={cn(
-        'flex shrink-0 items-start justify-between border-b border-border bg-surface',
-        // right padding clears the absolutely-positioned menu button
-        compact ? 'gap-2 py-3 pl-4 pr-[76px]' : 'gap-4 px-6 py-4',
+        'shrink-0 border-b border-border bg-surface',
+        // On a phone the title and five controls cannot share one row without
+        // the title collapsing to an ellipsis, so they stack. Right padding
+        // clears the absolutely-positioned menu button on the first row only.
+        compact
+          ? 'flex flex-col gap-2 py-3 pl-4 pr-[76px]'
+          : 'flex items-start justify-between gap-4 px-6 py-4',
       )}
     >
       <div className="min-w-0">
@@ -24,7 +28,7 @@ export function ViewHeader({ compact, right, subtitle }: { compact: boolean; rig
         </h1>
         <p className="mt-1 text-xs text-text-tertiary">{subtitle ?? 'No session selected'}</p>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className={cn('flex items-center gap-3', compact ? 'flex-wrap' : 'shrink-0')}>
       {right}
       <div role="group" aria-label="Board view" className="flex overflow-hidden rounded-lg border border-border">
         {([['kanban', Columns3, 'Kanban view'], ['timeline', GanttChartSquare, 'Timeline view']] as const).map(([v, I, label]) => (
