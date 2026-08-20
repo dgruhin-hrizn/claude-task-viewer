@@ -2,6 +2,7 @@ import { Columns3, GanttChartSquare, MoreVertical, Moon, Sun, SunMoon, Trash2 } 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useTheme, type ThemeChoice } from '@/stores/theme-provider';
 import { useUiStore } from '@/stores/uiStore';
+import { SessionSwitcher } from '@/components/sidebar/SessionSwitcher';
 import { cn } from '@/lib/utils';
 
 const NEXT: Record<ThemeChoice, ThemeChoice> = { light: 'dark', dark: 'system', system: 'light' };
@@ -28,7 +29,10 @@ export function ViewHeader({
       <header className="flex shrink-0 items-center gap-2 border-b border-border bg-surface px-4 py-2.5">
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-serif text-base leading-tight">Claude Tasks</h1>
-          {subtitle && <p className="truncate text-[11px] text-text-tertiary">{subtitle}</p>}
+          <span className="flex min-w-0 items-center gap-1">
+            <SessionSwitcher />
+            {subtitle && <span className="shrink-0 text-[11px] text-text-muted">· {subtitle}</span>}
+          </span>
         </div>
         {right}
         <DropdownMenu>
