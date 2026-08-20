@@ -1,10 +1,8 @@
-import { useEventStream } from './hooks/useEventStream';
 import { useUrlState } from './hooks/useUrlState';
 import { useUiStore } from './stores/uiStore';
 import { AppShell } from './components/layout/AppShell';
 
 export default function App() {
-  useEventStream();
   useUrlState();
   const selectedSessionId = useUiStore((s) => s.selectedSessionId);
   return (

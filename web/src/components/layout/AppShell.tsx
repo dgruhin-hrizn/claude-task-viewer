@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { BREAKPOINTS, useMediaQuery } from '@/hooks/useMediaQuery';
+import { useEventStream } from '@/hooks/useEventStream';
 import { SidebarContent } from './Sidebar';
 import { SkipNav } from './SkipNav';
 import { ViewHeader } from './ViewHeader';
 
 export function AppShell({ children }: { children?: React.ReactNode }) {
   const isDrawer = useMediaQuery(BREAKPOINTS.drawer);
+  const status = useEventStream();
   const [open, setOpen] = useState(false);
 
   // Crossing up to desktop while the drawer is open would otherwise leave a
@@ -25,7 +27,7 @@ export function AppShell({ children }: { children?: React.ReactNode }) {
           aria-label="Sessions"
           className="w-[280px] shrink-0 border-r border-border bg-surface"
         >
-          <SidebarContent />
+          <SidebarContent status={status} />
         </aside>
       )}
 
@@ -42,7 +44,7 @@ export function AppShell({ children }: { children?: React.ReactNode }) {
               <Menu className="size-[22px]" />
             </SheetTrigger>
             <SheetContent side="right" title="Sessions">
-              <SidebarContent />
+              <SidebarContent status={status} />
             </SheetContent>
           </Sheet>
         )}
