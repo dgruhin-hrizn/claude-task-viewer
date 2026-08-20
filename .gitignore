@@ -4,3 +4,5 @@ node_modules/
 .claude/
 CLAUDE.md
 AGENTS.md
+web/node_modules/
+*.tsbuildinfo

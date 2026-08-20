@@ -1,0 +1,31 @@
+name: build-check
+
+# public/ is committed build output, because `npx github:user/repo` and
+# `git clone && node server.js` both read the git tree rather than the npm
+# tarball. That only stays honest if drift is caught mechanically -- relying on
+# people to remember to rebuild is how stale UI ships.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-matches-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: public/ must match a fresh build
+        run: |
+          # Stage first: `git diff` alone only sees tracked files, so a build
+          # that emits a new hashed asset without deleting one would pass.
+          git add -A public/
+          if ! git diff --cached --exit-code --stat public/; then
+            echo "::error::public/ is stale. Run 'npm run build' and commit the result."
+            exit 1
+          fi
