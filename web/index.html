@@ -14,6 +14,23 @@
     <link rel="apple-touch-icon" href="/icon-180.png" />
   </head>
   <body>
+    <script>
+      // Runs before first paint. Without it, dark-mode users get a white flash
+      // on every reload while React boots -- very visible on a tool that sits
+      // open on a second monitor.
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (t !== 'light' && t !== 'dark') {
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          var el = document.documentElement;
+          el.classList.toggle('light', t === 'light');
+          el.dataset.palette = 'warm';
+          el.style.colorScheme = t;
+        } catch (e) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

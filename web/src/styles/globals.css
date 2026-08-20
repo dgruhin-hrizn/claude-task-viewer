@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Layer 1 — the app's own palette, verbatim.
+   Values are the measured ones from the vanilla app. Deliberately hex, NOT
+   oklch: the dark ramp's contrast was verified (tertiary 6.01:1, muted
+   3.90:1 against --bg-deep) and round-tripping through oklch shifts those
+   ratios for no benefit. Adding a palette later is one more [data-palette]
+   block and zero component edits.
+--------------------------------------------------------------------------- */
+[data-palette="warm"] {
+  --p-bg-deep: #171614;
+  --p-bg-surface: #1e1d1a;
+  --p-bg-elevated: #262521;
+  --p-bg-hover: #302e2a;
+  --p-border: #3a3833;
+  --p-text-primary: #f5f3ef;
+  --p-text-secondary: #c2bdb4;
+  --p-text-tertiary: #9a948a;
+  --p-text-muted: #7a746a;
+  --p-accent: #e86f33;
+  --p-success: #3ecf8e;
+  --p-warning: #f0b429;
+  --p-danger: #ef4444;
+}
+
+/* Light is a cool-neutral ramp in the original. Kept as-is so this todo is a
+   port, not a redesign; reconciling it with the warm dark is its own change. */
+[data-palette="warm"].light {
+  --p-bg-deep: #fafafa;
+  --p-bg-surface: #ffffff;
+  --p-bg-elevated: #f5f5f5;
+  --p-bg-hover: #efefef;
+  --p-border: #e5e5e5;
+  --p-text-primary: #171717;
+  --p-text-secondary: #525252;
+  --p-text-tertiary: #737373;
+  --p-text-muted: #a3a3a3;
+}
+
+/* ---------------------------------------------------------------------------
+   Layer 2 — shadcn's contract, aliased onto layer 1.
+   shadcn has no vocabulary for the four-step elevation ramp or the four text
+   weights the hand-built components need, so layer 1 stays the source of truth
+   and this only satisfies the primitives.
+--------------------------------------------------------------------------- */
+:root {
+  --background: var(--p-bg-deep);
+  --foreground: var(--p-text-primary);
+  --card: var(--p-bg-surface);
+  --card-foreground: var(--p-text-primary);
+  --popover: var(--p-bg-elevated);
+  --popover-foreground: var(--p-text-primary);
+  --primary: var(--p-accent);
+  --primary-foreground: #ffffff;
+  --secondary: var(--p-bg-elevated);
+  --secondary-foreground: var(--p-text-secondary);
+  --muted: var(--p-bg-elevated);
+  --muted-foreground: var(--p-text-tertiary);
+  --accent: var(--p-bg-hover);
+  --accent-foreground: var(--p-text-primary);
+  --destructive: var(--p-danger);
+  --destructive-foreground: #ffffff;
+  --border: var(--p-border);
+  --input: var(--p-border);
+  --ring: var(--p-accent);
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* app-specific ramp, unavailable in shadcn's vocabulary */
+  --color-surface: var(--p-bg-surface);
+  --color-elevated: var(--p-bg-elevated);
+  --color-hover: var(--p-bg-hover);
+  --color-text-secondary: var(--p-text-secondary);
+  --color-text-tertiary: var(--p-text-tertiary);
+  --color-text-muted: var(--p-text-muted);
+  --color-success: var(--p-success);
+  --color-warning: var(--p-warning);
+
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-serif: "Playfair Display", ui-serif, serif;
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition: none !important; }
+}
