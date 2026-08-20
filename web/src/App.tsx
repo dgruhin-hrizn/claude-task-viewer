@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { CircleHelp, Trash2 } from 'lucide-react';
+import { CircleHelp, ListTodo, Trash2 } from 'lucide-react';
 import { useSessionTasks } from './hooks/useSessions';
 import { useUrlState } from './hooks/useUrlState';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -7,12 +7,16 @@ import { useDeleteAllTasks, useDeleteTask } from './hooks/useTaskMutations';
 import { useCompletionNotifications } from './hooks/useCompletionNotifications';
 import { useUiStore } from './stores/uiStore';
 import { AppShell } from './components/layout/AppShell';
+import { PullToRefresh } from './components/layout/PullToRefresh';
+import { BREAKPOINTS, useMediaQuery } from './hooks/useMediaQuery';
 import { KanbanBoard } from './components/board/KanbanBoard';
 import { ProgressMeter } from './components/board/ProgressMeter';
 import { TaskDetail } from './components/detail/TaskDetail';
 import { TimelineView } from './components/timeline/TimelineView';
+import { MobileOverview } from './components/overview/MobileOverview';
 import { HelpDialog } from './components/dialogs/HelpDialog';
 import { ConfirmDialog } from './components/dialogs/ConfirmDialog';
+import { EmptyState } from './components/ui/EmptyState';
 
 export default function App() {
   useUrlState();
@@ -21,6 +25,11 @@ export default function App() {
   const selectTask = useUiStore((s) => s.selectTask);
   const boardView = useUiStore((s) => s.boardView);
   const notificationsEnabled = useUiStore((s) => s.notificationsEnabled);
+  const setDrawerOpen = useUiStore((s) => s.setDrawerOpen);
+  const isDrawer = useMediaQuery(BREAKPOINTS.drawer);
+  const isPhone = useMediaQuery(BREAKPOINTS.phone);
+  const mobileTab = useUiStore((s) => s.mobileTab);
+  const setMobileTab = useUiStore((s) => s.setMobileTab);
 
   const { data: tasks = [], isLoading } = useSessionTasks(selectedSessionId);
   const del = useDeleteTask(selectedSessionId ?? '');
@@ -59,34 +68,59 @@ export default function App() {
     <>
       <AppShell
         subtitle={selectedSessionId ? `${tasks.length} tasks` : 'No session selected'}
+        onDeleteAll={tasks.length > 0 ? () => setConfirmDeleteAll(true) : undefined}
         headerRight={
           <>
             {tasks.length > 0 && <ProgressMeter value={pct} label="Session progress" />}
-            {tasks.length > 0 && (
+            {!isPhone && tasks.length > 0 && (
               <button type="button" aria-label="Delete all tasks in this session"
                 onClick={() => setConfirmDeleteAll(true)}
-                className="flex size-8 items-center justify-center rounded-lg border border-border text-destructive max-md:size-11">
-                <Trash2 className="size-4 max-md:size-5" />
+                className="flex size-8 items-center justify-center rounded-lg border border-border text-destructive">
+                <Trash2 className="size-4" />
               </button>
             )}
-            <button type="button" aria-label="Keyboard shortcuts" onClick={() => setHelp(true)}
-              className="flex size-8 items-center justify-center rounded-lg border border-border text-text-tertiary max-md:hidden">
-              <CircleHelp className="size-4" />
-            </button>
+            {!isPhone && (
+              <button type="button" aria-label="Keyboard shortcuts" onClick={() => setHelp(true)}
+                className="flex size-8 items-center justify-center rounded-lg border border-border text-text-tertiary max-md:hidden">
+                <CircleHelp className="size-4" />
+              </button>
+            )}
           </>
         }
       >
-        {!selectedSessionId ? (
-          <p className="p-6 text-sm text-text-tertiary">Select a session to view its tasks.</p>
+        {isPhone && mobileTab === 'overview' ? (
+          <PullToRefresh enabled><MobileOverview /></PullToRefresh>
+        ) : !selectedSessionId ? (
+          <EmptyState
+            icon={ListTodo}
+            title="No session open"
+            hint={isPhone
+              ? 'Sessions appear here as Claude Code writes tasks. Overview lists them all.'
+              : isDrawer
+                ? 'Sessions appear here as Claude Code writes tasks. Open the menu to pick one.'
+                : 'Sessions appear here as Claude Code writes tasks. Pick one from the list on the left.'}
+            // point at whichever session list this viewport actually has
+            action={isPhone
+              ? { label: 'Go to Overview', onClick: () => setMobileTab('overview') }
+              : isDrawer
+                ? { label: 'Browse sessions', onClick: () => setDrawerOpen(true) }
+                : undefined}
+          />
         ) : isLoading ? (
           <p className="p-6 text-sm text-text-muted">Loading…</p>
         ) : (
+          <PullToRefresh enabled={isPhone}>
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              {boardView === 'timeline' ? <TimelineView tasks={tasks} /> : <KanbanBoard tasks={tasks} />}
+              {isPhone
+                ? (mobileTab === 'overview' ? <MobileOverview />
+                  : mobileTab === 'timeline' ? <TimelineView tasks={tasks} />
+                  : <KanbanBoard tasks={tasks} />)
+                : (boardView === 'timeline' ? <TimelineView tasks={tasks} /> : <KanbanBoard tasks={tasks} />)}
             </div>
             <TaskDetail tasks={tasks} sessionId={selectedSessionId} />
           </div>
+          </PullToRefresh>
         )}
       </AppShell>
 

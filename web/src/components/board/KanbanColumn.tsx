@@ -1,6 +1,14 @@
 import { cn } from '@/lib/utils';
 import type { Task, TaskStatus } from '@/types/task';
 import { TaskCard } from './TaskCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+
+/** Says why the column is empty, which is the part a person cannot infer. */
+const EMPTY_HINT: Record<TaskStatus, string> = {
+  pending: 'Everything queued has been picked up.',
+  in_progress: 'Claude Code is not working on anything in this session right now.',
+  completed: 'Nothing finished yet.',
+};
 
 export const COLUMNS: { status: TaskStatus; label: string; short: string; dot: string }[] = [
   { status: 'pending', label: 'Pending', short: 'Pending', dot: 'bg-text-muted' },
@@ -18,7 +26,7 @@ export function KanbanColumn({
   return (
     <section
       aria-labelledby={headingId}
-      className="flex min-h-0 w-full shrink-0 flex-col md:w-[320px]"
+      className="flex h-full min-h-0 w-full flex-col md:h-auto md:w-[320px] md:shrink-0"
     >
       <h2
         id={headingId}
@@ -31,7 +39,13 @@ export function KanbanColumn({
       {/* real list semantics: a screen reader announces "list, N items" */}
       <ul role="list" className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain">
         {tasks.length === 0 ? (
-          <li className="py-8 text-center text-xs text-text-muted">No {label.toLowerCase()} tasks</li>
+          <li>
+            <EmptyState
+              title={`Nothing ${label.toLowerCase()}`}
+              hint={EMPTY_HINT[status]}
+              className="py-8"
+            />
+          </li>
         ) : (
           tasks.map((t) => <TaskCard key={t.id} task={t} allTasks={allTasks} />)
         )}

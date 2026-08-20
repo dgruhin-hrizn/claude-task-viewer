@@ -4,17 +4,21 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { BREAKPOINTS, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useEventStream } from '@/hooks/useEventStream';
 import { useUiStore } from '@/stores/uiStore';
+import { BottomNav } from './BottomNav';
 import { SidebarContent } from './Sidebar';
 import { SkipNav } from './SkipNav';
 import { ViewHeader } from './ViewHeader';
 
 export function AppShell({
-  children, headerRight, subtitle,
+  children, headerRight, subtitle, onDeleteAll,
 }: {
   children?: React.ReactNode; headerRight?: React.ReactNode; subtitle?: string;
+  onDeleteAll?: () => void;
 }) {
   const isDrawer = useMediaQuery(BREAKPOINTS.drawer);
+  const isPhone = useMediaQuery(BREAKPOINTS.phone);
   const status = useEventStream();
+
   // Drawer state lives in the store, because selectSession() closes it as part
   // of selecting -- local state here silently ignored that and the drawer
   // stayed open over the board after a tap.
@@ -41,7 +45,7 @@ export function AppShell({
       )}
 
       <main id="main" className="relative flex min-w-0 flex-1 flex-col bg-background">
-        {isDrawer && (
+        {isDrawer && !isPhone && (
           // The trigger must live inside <Sheet> and be Radix's own Trigger:
           // a button outside it leaves Radix with nothing to return focus to
           // when the drawer closes, so focus falls to <body>.
@@ -57,8 +61,9 @@ export function AppShell({
             </SheetContent>
           </Sheet>
         )}
-        <ViewHeader compact={isDrawer} right={headerRight} subtitle={subtitle} />
+        <ViewHeader compact={isDrawer} phone={isPhone} status={isPhone ? status : undefined} right={headerRight} subtitle={subtitle} onDeleteAll={onDeleteAll} />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
+        {isPhone && <BottomNav />}
       </main>
     </div>
   );

@@ -6,11 +6,13 @@ import { cn } from '@/lib/utils';
 import { describeBar, formatAxisLabel, formatDuration } from '@/lib/time';
 import { useUiStore } from '@/stores/uiStore';
 import type { Task } from '@/types/task';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 /** Shared by the axis and the rows. In the vanilla app this lived in CSS and
  *  was read back out with getComputedStyle; here it is simply a constant. */
 const GUTTER_PX = 148;
-const GUTTER_PX_PHONE = 92;
+/** Phones stack instead of using a gutter, so the track spans the full width. */
+const GUTTER_PX_PHONE = 0;
 
 const BAR_TONE: Record<Task['status'], string> = {
   pending: 'bg-text-muted',
@@ -43,7 +45,12 @@ export function TimelineView({ tasks }: { tasks: Task[] }) {
     }) };
   }, [tasks, isPhone]);
 
-  if (!model) return <p className="p-6 text-sm text-text-muted">No tasks to plot.</p>;
+  if (!model) return (
+    <EmptyState
+      title="Nothing to plot yet"
+      hint="The timeline draws each task from when it was created to when it last changed."
+    />
+  );
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 md:p-6">
@@ -75,6 +82,50 @@ export function TimelineView({ tasks }: { tasks: Task[] }) {
               />
             </span>
           );
+          const info = isTouch ? (
+            <Popover.Root>
+              <Popover.Trigger asChild>{bar}</Popover.Trigger>
+              <Popover.Portal>
+                <Popover.Content side="top" sideOffset={6} className="z-50 max-w-[calc(100vw-24px)] rounded-md border border-border bg-popover px-3 py-2 text-[11px] text-foreground shadow-lg">
+                  <p className="font-medium">{task.subject}</p>
+                  <p className="mt-0.5 text-text-tertiary">{formatDuration(end - start)}</p>
+                </Popover.Content>
+              </Popover.Portal>
+            </Popover.Root>
+          ) : (
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>{bar}</Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content side="top" sideOffset={6} className="z-50 max-w-[300px] rounded-md border border-border bg-popover px-3 py-2 text-[11px] text-foreground shadow-lg">
+                  <p className="font-medium">{task.subject}</p>
+                  <p className="mt-0.5 text-text-tertiary">
+                    {new Date(start).toLocaleString()} → {new Date(end).toLocaleString()} ({formatDuration(end - start)})
+                  </p>
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+          );
+
+          // On a phone the label and the bar are SIBLINGS, not a bar nested in a
+          // row-wide button. Nesting made a bar tap fire the popover and the
+          // row's onClick together, so the detail sheet opened over the tooltip.
+          // Tapping the label opens the task; tapping the bar shows its timing.
+          if (isPhone) {
+            return (
+              <li key={task.id} className="rounded px-1 py-1.5 hover:bg-elevated">
+                <button
+                  type="button"
+                  onClick={() => selectTask(task.id)}
+                  aria-label={description}
+                  className="line-clamp-2 w-full text-left text-xs leading-snug text-text-secondary"
+                >
+                  #{task.id} {task.subject}
+                </button>
+                <div className="mt-1 flex min-h-6 items-center">{info}</div>
+              </li>
+            );
+          }
+
           return (
             <li key={task.id}>
               <button
@@ -83,36 +134,10 @@ export function TimelineView({ tasks }: { tasks: Task[] }) {
                 aria-label={description}
                 className="flex min-h-11 w-full items-center gap-3 rounded px-1 text-left hover:bg-elevated"
               >
-                <span
-                  className="shrink-0 truncate text-right text-[11px] text-text-secondary md:text-xs"
-                  style={{ width: gutter - 12 }}
-                >
+                <span className="shrink-0 truncate text-right text-[11px] text-text-secondary md:text-xs" style={{ width: gutter - 12 }}>
                   #{task.id} {task.subject}
                 </span>
-                {/* Radix Tooltip never fires on tap, so touch gets a Popover */}
-                {isTouch ? (
-                  <Popover.Root>
-                    <Popover.Trigger asChild>{bar}</Popover.Trigger>
-                    <Popover.Portal>
-                      <Popover.Content side="top" sideOffset={6} className="z-50 max-w-[calc(100vw-24px)] rounded-md border border-border bg-popover px-3 py-2 text-[11px] text-foreground shadow-lg">
-                        <p className="font-medium">{task.subject}</p>
-                        <p className="mt-0.5 text-text-tertiary">{formatDuration(end - start)}</p>
-                      </Popover.Content>
-                    </Popover.Portal>
-                  </Popover.Root>
-                ) : (
-                  <Tooltip.Root>
-                    <Tooltip.Trigger asChild>{bar}</Tooltip.Trigger>
-                    <Tooltip.Portal>
-                      <Tooltip.Content side="top" sideOffset={6} className="z-50 max-w-[300px] rounded-md border border-border bg-popover px-3 py-2 text-[11px] text-foreground shadow-lg">
-                        <p className="font-medium">{task.subject}</p>
-                        <p className="mt-0.5 text-text-tertiary">
-                          {new Date(start).toLocaleString()} → {new Date(end).toLocaleString()} ({formatDuration(end - start)})
-                        </p>
-                      </Tooltip.Content>
-                    </Tooltip.Portal>
-                  </Tooltip.Root>
-                )}
+                {info}
               </button>
             </li>
           );

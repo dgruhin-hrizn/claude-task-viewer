@@ -6,9 +6,10 @@ import { useUiStore } from '@/stores/uiStore';
 import { FilterBar } from './FilterBar';
 import { SearchBox } from './SearchBox';
 import { SessionItem } from './SessionItem';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export function SessionList() {
-  const { sessionFilter, sessionLimit, filterProject, searchQuery, setSessionFilter } = useUiStore();
+  const { sessionFilter, sessionLimit, filterProject, searchQuery, setSessionFilter, setSearchQuery } = useUiStore();
   const { data, isLoading } = useSessions(sessionLimit, sessionFilter === 'with-tasks');
   const sessions = data?.sessions ?? [];
 
@@ -55,7 +56,23 @@ export function SessionList() {
 
         {isLoading && <p className="px-3 py-4 text-xs text-text-muted">Loading…</p>}
         {!isLoading && visible.length === 0 && (
-          <p className="px-3 py-4 text-center text-xs text-text-muted">No sessions match</p>
+          searchQuery ? (
+            <EmptyState
+              title={`Nothing matches "${searchQuery}"`}
+              hint="Search covers session names, projects and branches."
+              action={{ label: 'Clear search', onClick: () => setSearchQuery('') }}
+              className="py-6"
+            />
+          ) : (
+            <EmptyState
+              title="No sessions match this filter"
+              hint={sessionFilter === 'active'
+                ? 'Only sessions with pending or in-progress work are shown.'
+                : 'Only sessions that have written tasks are shown.'}
+              action={sessionFilter === 'all' ? undefined : { label: 'Show all sessions', onClick: () => setSessionFilter('all') }}
+              className="py-6"
+            />
+          )
         )}
 
         {current.map((s) => <SessionItem key={s.id} session={s} />)}
