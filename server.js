@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const express = require('express');
+const http = require('http');
 const path = require('path');
 const fs = require('fs').promises;
 const { existsSync, readdirSync, readFileSync, statSync, createReadStream } = require('fs');
@@ -12,6 +13,11 @@ const app = express();
 const DEFAULT_PORT = 3456;
 const explicitPort = process.env.PORT ? parseInt(process.env.PORT, 10) : null;
 const MAX_PORT_ATTEMPTS = 10;
+// Node caps request headers at 16KB by default and answers 431 above it. Cookies
+// are not port-scoped, so every dev server you have ever run on localhost piles
+// into the jar sent here -- a busy machine blows the default and the app appears
+// dead before any route runs. Override with CTV_MAX_HEADER_SIZE if 64KB is not enough.
+const MAX_HEADER_SIZE = parseInt(process.env.CTV_MAX_HEADER_SIZE, 10) || 64 * 1024;
 
 // Parse --dir flag for custom Claude directory
 function getClaudeDir() {
@@ -622,7 +628,9 @@ projectsWatcher.on('all', (event, filePath) => {
 
 // Start server with auto port discovery
 function startServer(port, attempt = 0) {
-  const server = app.listen(port, () => {
+  // app.listen() cannot pass maxHeaderSize, so build the server explicitly.
+  const server = http.createServer({ maxHeaderSize: MAX_HEADER_SIZE }, app);
+  server.listen(port, () => {
     console.log(`Claude Task Viewer running at http://localhost:${port}`);
 
     // Open browser if --open flag is passed
