@@ -4,6 +4,7 @@ import { useUiStore } from './stores/uiStore';
 import { AppShell } from './components/layout/AppShell';
 import { KanbanBoard } from './components/board/KanbanBoard';
 import { ProgressMeter } from './components/board/ProgressMeter';
+import { TaskDetail } from './components/detail/TaskDetail';
 
 export default function App() {
   useUrlState();
@@ -23,7 +24,12 @@ export default function App() {
       ) : isLoading ? (
         <p className="p-6 text-sm text-text-muted">Loading…</p>
       ) : (
-        <KanbanBoard tasks={tasks} />
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <KanbanBoard tasks={tasks} />
+          </div>
+          <TaskDetail tasks={tasks} />
+        </div>
       )}
     </AppShell>
   );
