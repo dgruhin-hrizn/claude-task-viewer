@@ -1,3 +1,11 @@
+/* Self-hosted, Latin subset only. The vanilla app pulled these from Google
+   Fonts on every load: a render-blocking third-party request, and a privacy
+   leak for a tool that otherwise never leaves localhost. */
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "@fontsource/ibm-plex-mono/latin-600.css";
+@import "@fontsource/playfair-display/latin-400.css";
+@import "@fontsource/playfair-display/latin-500.css";
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 

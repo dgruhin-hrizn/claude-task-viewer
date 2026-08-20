@@ -58,7 +58,18 @@ const METADATA_CACHE_TTL = 10000; // 10 seconds
 app.use(express.json());
 
 // Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+// Vite hashes asset filenames, so /assets/* is safe to cache forever; the
+// HTML entry must never be cached or a stale document would keep pointing at
+// deleted bundles after an upgrade.
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders(res, filePath) {
+    if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store');
+    }
+  },
+}));
 
 /**
  * Read customTitle and slug from a JSONL file
