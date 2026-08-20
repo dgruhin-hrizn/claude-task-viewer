@@ -1,3 +1,4 @@
+import { SessionList } from '@/components/sidebar/SessionList';
 import { ClaudeLogo } from './ClaudeLogo';
 
 /** Sidebar contents, shared by the desktop rail and the mobile drawer so the
@@ -24,7 +25,7 @@ export function SidebarContent() {
         <h2 id="sessions-heading" className="text-[11px] uppercase tracking-wider text-text-muted">
           Sessions
         </h2>
-        <div className="mt-2 min-h-0 flex-1 overflow-y-auto overscroll-contain" />
+        <SessionList />
       </section>
 
       <footer className="border-t border-border px-4 py-3 text-[11px] text-text-muted">
