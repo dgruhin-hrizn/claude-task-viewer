@@ -3,16 +3,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useTheme, type ThemeChoice } from '@/stores/theme-provider';
 import { useUiStore } from '@/stores/uiStore';
 import { SessionSwitcher } from '@/components/sidebar/SessionSwitcher';
+import type { ConnectionState } from '@/hooks/useEventStream';
 import { cn } from '@/lib/utils';
 
 const NEXT: Record<ThemeChoice, ThemeChoice> = { light: 'dark', dark: 'system', system: 'light' };
 const ICON = { light: Sun, dark: Moon, system: SunMoon };
 
 export function ViewHeader({
-  compact, phone, right, subtitle, onDeleteAll,
+  compact, phone, status, right, subtitle, onDeleteAll,
 }: {
   compact: boolean;
   phone: boolean;
+  status?: ConnectionState;
   right?: React.ReactNode;
   subtitle?: string;
   onDeleteAll?: () => void;
@@ -30,6 +32,25 @@ export function ViewHeader({
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-serif text-base leading-tight">Claude Tasks</h1>
           <span className="flex min-w-0 items-center gap-1">
+            {/* Phones do not render the sidebar, so without this a dropped
+                stream leaves the UI silently stale with no indication. */}
+            {status && (
+              <span
+                aria-live="polite"
+                aria-atomic="true"
+                title={`Connection: ${status}`}
+                className="flex shrink-0 items-center"
+              >
+                <span className="sr-only">Connection: {status}</span>
+                <span
+                  aria-hidden="true"
+                  className={cn('size-1.5 rounded-full',
+                    status === 'connected' && 'bg-success',
+                    status === 'connecting' && 'animate-pulse bg-warning motion-reduce:animate-none',
+                    status === 'disconnected' && 'bg-destructive')}
+                />
+              </span>
+            )}
             <SessionSwitcher />
             {subtitle && <span className="shrink-0 text-[11px] text-text-muted">· {subtitle}</span>}
           </span>

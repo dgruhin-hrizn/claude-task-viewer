@@ -61,7 +61,7 @@ export function AppShell({
             </SheetContent>
           </Sheet>
         )}
-        <ViewHeader compact={isDrawer} phone={isPhone} right={headerRight} subtitle={subtitle} onDeleteAll={onDeleteAll} />
+        <ViewHeader compact={isDrawer} phone={isPhone} status={isPhone ? status : undefined} right={headerRight} subtitle={subtitle} onDeleteAll={onDeleteAll} />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
         {isPhone && <BottomNav />}
       </main>
